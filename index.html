@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Digital Generator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            overflow: hidden;
+        }
+
+        .container {
+            text-align: center;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        .digital-text {
+            font-size: clamp(2rem, 8vw, 6rem);
+            font-weight: 700;
+            color: white;
+            text-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+            letter-spacing: 2px;
+            animation: pulse 2s infinite;
+        }
+
+        .refresh-hint {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            color: rgba(255, 255, 255, 0.8);
+            font-weight: 300;
+            animation: fadeIn 1.5s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.02);
+            }
+        }
+
+        @media (max-width: 768px) {
+            .refresh-hint {
+                font-size: 1rem;
+                margin-top: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="digital-text" id="digitalTerm">Digital Loading...</div>
+        <div class="refresh-hint">Rechargez la page pour un nouveau terme</div>
+    </div>
+
+    <script>
+        const digitalTerms = [
+            "Nomad", "Ouin-Ouin", "Chouquette", "Pépouze", "Tocard", "Raclette", "Moumoute", "Fainéant", "Patate", "Chaussette",
+            "Cornichon", "Gaufrette", "Lama", "Bagarre", "Pépito", "Frisbee", "Relou", "Baguette", "Crevette", "Croquette",
+            "Pigeon", "Pastaga", "Fromage", "Churros", "Croissant", "Macaron", "Éclair", "Madeleine", "Financier", "Canelé",
+            "Brioche", "Pain-au-Chocolat", "Kouign-Amann", "Fougasse", "Biscotte", "Tartine", "Crouton", "Quignon", "Mie", "Levure",
+            "Pâton", "Pétrissage", "Levain", "Farine", "Sarrasin", "Épeautre", "Seigle", "Avoine", "Orge", "Quinoa",
+            "Boulgour", "Couscous", "Polenta", "Risotto", "Paella", "Gazpacho", "Minestrone", "Bouillabaisse", "Ratatouille", "Cassoulet",
+            "Choucroute", "Pot-au-Feu", "Blanquette", "Bourguignon", "Coq-au-Vin", "Confit", "Magret", "Foie-Gras", "Terrine", "Pâté",
+            "Rillettes", "Andouillette", "Boudin", "Merguez", "Chipolata", "Toulouse", "Montbéliard", "Morteau", "Comté", "Roquefort",
+            "Camembert", "Brie", "Munster", "Maroilles", "Époisses", "Crottin", "Chèvre", "Feta", "Mozzarella", "Parmesan",
+            "Gruyère", "Emmental", "Beaufort", "Abondance", "Reblochon", "Tomme", "Cantal", "Salers", "Laguiole", "Bleu",
+            "Fourme", "Stilton", "Gorgonzola", "Mascarpone", "Ricotta", "Burrata", "Stracciatella", "Provolone", "Pecorino", "Romano",
+            "Mimolette", "Maroilles", "Livarot", "Pont-l'Évêque", "Neufchâtel", "Chaource", "Langres", "Soumaintrain", "Selles-sur-Cher", "Pouligny",
+            "Valençay", "Picodon", "Banon", "Pélardon", "Rocamadour", "Cabécou", "Chavignol", "Chabichou", "Sainte-Maure", "Pouligny-Saint-Pierre",
+            "Champignon", "Cèpe", "Girolles", "Mousseron", "Pleurote", "Shiitaké", "Portobello", "Cremini", "Enoki", "Chanterelle",
+            "Morille", "Truffe", "Porcini", "Bolet", "Lactaire", "Russule", "Amanite", "Coprin", "Vesse", "Pézize",
+            "Clavaire", "Hydne", "Polypore", "Tramète", "Auriculaire", "Trémelle", "Exidie", "Pholiote", "Hypholome", "Strophaire",
+            "Limace", "Escargot", "Chenille", "Papillon", "Coccinelle", "Scarabée", "Hanneton", "Lucane", "Carabe", "Cicindèle",
+            "Libellule", "Demoiselle", "Éphémère", "Perle", "Phrygane", "Chironome", "Cousin", "Taon", "Mouche", "Syrphe",
+            "Abeille", "Bourdon", "Guêpe", "Frelon", "Fourmi", "Termite", "Puceron", "Cochenille", "Thrips", "Cicadelle",
+            "Punaise", "Réduve", "Pentatome", "Corée", "Lygée", "Miride", "Anthocore", "Orius", "Nabide", "Vélie",
+            "Gerris", "Notonecte", "Corise", "Nèpe", "Ranâtre", "Hydromètre", "Plea", "Sigara", "Corixa", "Hesperocorixa",
+            "Criquet", "Sauterelle", "Grillon", "Courtilière", "Forficule", "Blatte", "Mante", "Phasme", "Embioptère", "Zorapte",
+            "Psoque", "Thrips", "Plécoptère", "Dermaptère", "Orthoptère", "Dictyoptère", "Isoptère", "Psocoptère", "Thysanoptère", "Hémiptère",
+            "Homoptère", "Névroptère", "Mécoptère", "Lépidoptère", "Diptère", "Siphonaptère", "Hyménoptère", "Coléoptère", "Strepsiptère", "Trichoptère",
+            "Sardine", "Anchois", "Thon", "Saumon", "Truite", "Brochet", "Sandre", "Perche", "Carpe", "Tanche",
+            "Gardon", "Rotengle", "Brème", "Chevesne", "Vandoise", "Vairon", "Loche", "Chabot", "Épinoche", "Anguille",
+            "Lamproie", "Esturgeon", "Alose", "Grande-Alose", "Finte", "Saumon-Atlantique", "Truite-de-Mer", "Ombre", "Corégone", "Lavaret",
+            "Féra", "Bondelle", "Cisco", "Inconnu", "Omble", "Cristivomer", "Touladi", "Ouananiche", "Kokani", "Dolly-Varden",
+            "Pie", "Corneille", "Corbeau", "Geai", "Étourneau", "Merle", "Grive", "Rouge-Gorge", "Rossignol", "Fauvette",
+            "Pouillot", "Roitelet", "Troglodyte", "Accenteur", "Bergeronnette", "Pipit", "Alouette", "Hirondelle", "Martinet", "Guêpier",
+            "Martin-Pêcheur", "Huppe", "Torcol", "Pic", "Cochevis", "Calandrelle", "Ammomane", "Sirli", "Alouette-Lulu", "Alouette-Haussecol",
+            "Bruant", "Ortolan", "Proyer", "Verdier", "Serin", "Canari", "Tarin", "Venturon", "Linotte", "Sizerin",
+            "Chardonneret", "Bouvreuil", "Durbec", "Grosbec", "Moineau", "Niverolle", "Moinelette", "Tisserin", "Euplecte", "Veuve",
+            "Estrildes", "Bengali", "Capucin", "Nonette", "Padda", "Diamant", "Astrild", "Cordonbleu", "Amarante", "Combassou",
+            "Écureuil", "Marmotte", "Castor", "Rat-Musqué", "Campagnol", "Mulot", "Souris", "Rat", "Lérot", "Loir",
+            "Muscardin", "Hérisson", "Taupe", "Musaraigne", "Crossope", "Pachyure", "Crocidure", "Sorex", "Neomys", "Blarine",
+            "Lapin", "Lièvre", "Pika", "Ochoton", "Lagomorphe", "Rongeur", "Insectivore", "Chiroptère", "Chauve-Souris", "Vespertilion",
+            "Sérotine", "Noctule", "Pipistrelle", "Oreillard", "Barbastelle", "Minioptère", "Molosse", "Rhinolophe", "Fer-à-Cheval", "Trident",
+            "Sanglier", "Chevreuil", "Cerf", "Daim", "Chamois", "Isard", "Bouquetin", "Mouflon", "Renne", "Élan",
+            "Renard", "Loup", "Chien", "Chat", "Lynx", "Genette", "Martre", "Fouine", "Hermine", "Belette",
+            "Vison", "Putois", "Furet", "Loutre", "Blaireau", "Ours", "Phoque", "Dauphin", "Marsouin", "Baleine",
+            "Cachalot", "Orque", "Globicéphale", "Bélouga", "Narval", "Rorqual", "Balénoptère", "Mégaptère", "Balaene", "Eschrichtius",
+            "Poulpe", "Seiche", "Calmar", "Nautile", "Spirule", "Argonaute", "Pieuvre", "Encornet", "Ommastrèphe", "Loligo",
+            "Homard", "Langouste", "Langoustine", "Écrevisse", "Crabe", "Tourteau", "Araignée-de-Mer", "Étrille", "Crevette", "Bouquet",
+            "Gambas", "Scampi", "Cigale-de-Mer", "Galathée", "Porcellane", "Pagure", "Bernard-l'Ermite", "Cloporte", "Gloméris", "Iule",
+            "Scolopendre", "Lithobiomorphe", "Scutigère", "Géophilomorphe", "Craterostigmomorphe", "Scolopendromorphe", "Symphyle", "Pauropode", "Diplopode", "Chilopopde",
+            "Huitre", "Moule", "Coquille-Saint-Jacques", "Pétoncle", "Praire", "Palourde", "Clam", "Couteau", "Telline", "Donace",
+            "Mactre", "Lutraire", "Mye", "Panope", "Taret", "Pholade", "Gastrochaene", "Saxicave", "Petricole", "Venerupis",
+            "Patelle", "Fissurelle", "Haliotide", "Troque", "Monodonte", "Gibbule", "Calliostome", "Jujubinus", "Clanculus", "Tectus",
+            "Littorines", "Lacunes", "Hydrobie", "Risso", "Barleeia", "Skeneopsis", "Omalogyra", "Turbonilla", "Pyramidelle", "Chrysallida",
+            "Bigorneau", "Pourpre", "Rocher", "Buccin", "Nasse", "Triton", "Casque", "Tonne", "Figue", "Harpe",
+            "Mitre", "Volute", "Marginelle", "Cyprée", "Ovule", "Strombe", "Aporrhais", "Xénophore", "Calyptrée", "Crépidul",
+            "Vipère", "Couleuvre", "Orvet", "Lézard", "Gecko", "Seps", "Scinque", "Amphisbène", "Python", "Boa",
+            "Anaconda", "Mamba", "Cobra", "Crotale", "Mocassin", "Fer-de-Lance", "Trigonocéphale", "Bothrops", "Lachésis", "Micrurus",
+            "Salamandre", "Triton", "Pleurodèle", "Euprocte", "Protée", "Necture", "Amphiume", "Sirène", "Pseudobranche", "Cryptobranche",
+            "Crapaud", "Grenouille", "Rainette", "Pélodyte", "Alyte", "Discoglosse", "Pélobate", "Sonneur", "Calamite", "Bufo",
+            "Libellule", "Agrion", "Caloptéryx", "Leste", "Platycnémis", "Coenagrion", "Erythromma", "Ischnura", "Pyrrhosoma", "Enallagma",
+            "Aeschne", "Anax", "Brachytron", "Cordulegaster", "Cordulie", "Epitheca", "Oxygastra", "Somatochlora", "Libellula", "Orthetrum",
+            "Crocothemis", "Sympetrum", "Leucorrhinia", "Selysiothemis", "Trithemis", "Pantala", "Trapezostigma", "Rhyothemis", "Neurothemis", "Brachydiplax",
+            "Crocodile", "Alligator", "Caïman", "Gavial", "Tortue", "Chélonien", "Testudine", "Émyde", "Cistude", "Géoémyde",
+            "Maurémyde", "Ocadie", "Trachemys", "Chrysémyde", "Pseudémyde", "Graptemys", "Malaclemys", "Sternotherus", "Kinosternon", "Claudius",
+            "Requin", "Raie", "Torpille", "Ange-de-Mer", "Scie", "Guitare", "Poisson-Scie", "Pristis", "Rhinobatos", "Rhynchobatus",
+            "Murène", "Congre", "Gymnote", "Poisson-Couteau", "Silure", "Poisson-Chat", "Barbeau", "Goujon", "Ablette", "Spirlin",
+            "Hotu", "Nase", "Toxostome", "Sofie", "Ide", "Carassin", "Bouvière", "Rhodée", "Bitterling", "Pseudorasbora",
+            "Bégonia", "Géranium", "Pétunie", "Impatiens", "Coleus", "Fuchsia", "Cyclamen", "Primevère", "Violette", "Pensée",
+            "Muflier", "Pétunia", "Lobélie", "Verveine", "Ageratum", "Tagète", "Zinnia", "Cosmos", "Capucine", "Tournesol",
+            "Dahlia", "Glaïeul", "Iris", "Tulipe", "Jacinthe", "Narcisse", "Jonquille", "Crocus", "Perce-Neige", "Nivéole",
+            "Muscari", "Scille", "Puschkinia", "Chinodoxa", "Eranthis", "Galanthus", "Leucojum", "Fritillaire", "Couronne-Impériale", "Lis",
+            "Cachemire", "Mohair", "Angora", "Alpaga", "Vicuna", "Laine", "Soie", "Lin", "Chanvre", "Jute",
+            "Sisal", "Coir", "Kapok", "Coton", "Ramie", "Ortie", "Bambou", "Viscose", "Modal", "Lyocell",
+            "Tencel", "Cupro", "Acétate", "Triacétate", "Polyester", "Nylon", "Polyamide", "Acrylique", "Élasthanne", "Spandex",
+            "Lycra", "Néoprène", "Gore-Tex", "Polaire", "Molleton", "Jersey", "Interlock", "Côte", "Bouclette", "Éponge",
+            "Velours", "Corduroy", "Satin", "Taffetas", "Organza", "Mousseline", "Crêpe", "Georgette", "Chiffon", "Voile",
+            "Tulle", "Dentelle", "Broderie", "Guipure", "Macramé", "Crochet", "Tricot", "Point-de-Croix", "Tapisserie", "Patchwork",
+            "Boutis", "Matelassé", "Capitonné", "Piqué", "Gaufré", "Jacquard", "Brocart", "Damas", "Lampas", "Pékin",
+            "Faille", "Reps", "Ottoman", "Cannelé", "Côtelé", "Sergé", "Chevron", "Pied-de-Poule", "Prince-de-Galles", "Tartan",
+            "Madras", "Vichy", "Carreaux", "Rayures", "Pois", "Fleurs", "Paisley", "Cachemire", "Arabesque", "Baroque",
+            "Rococo", "Art-Déco", "Art-Nouveau", "Liberty", "Toile-de-Jouy", "Provençal", "Basque", "Breton", "Écossais", "Anglais",
+            "Flamant", "Cygne", "Oie", "Canard", "Sarcelle", "Colvert", "Pilet", "Chipeau", "Siffleur", "Milouin",
+            "Morillon", "Fuligule", "Nette", "Tadorne", "Bernache", "Macreuse", "Eider", "Garrot", "Harelde", "Harle"
+        ];
+
+        function getRandomTerm() {
+            const randomIndex = Math.floor(Math.random() * digitalTerms.length);
+            return digitalTerms[randomIndex];
+        }
+
+        function displayRandomTerm() {
+            const termElement = document.getElementById('digitalTerm');
+            const randomTerm = getRandomTerm();
+            termElement.textContent = `Digital ${randomTerm}`;
+        }
+
+        // Afficher un terme aléatoire au chargement de la page
+        window.addEventListener('load', displayRandomTerm);
+    </script>
+</body>
+</html>
